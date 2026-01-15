@@ -1,12 +1,12 @@
 import { useForm } from "react-hook-form"
 import Img from '../../../assets/auth.png'
-import '../../../Utils/form.css'
+import '../../../Utils/styles/form.css'
 import { Link, useLocation, useNavigate } from "react-router"
 import axios from "axios"
 import { useContext, useState } from "react"
-import { AuthContext } from "../../../Context/AuthContext"
 import { FaEye, FaEyeSlash } from "react-icons/fa"
 import { toast } from "sonner"
+import { AuthContext } from "../../../Context/AuthContext"
 
 interface userInfo {
     name: string;
@@ -17,7 +17,10 @@ interface userInfo {
 
 export default function RegisterPage() {
     const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<userInfo>()
-    const { user, createUser, updateUser, signOutUser } = useContext(AuthContext)
+    const userCtx = useContext(AuthContext);
+    if (!userCtx) throw new Error("UserContext is missing. Wrap app with UserContext Provider.");
+
+    const { user, createUser, updateUser, signOutUser } = userCtx;
     const [isVisible, setIsVisible] = useState(false)
     const { state } = useLocation()
     const navigate = useNavigate()
@@ -32,7 +35,6 @@ export default function RegisterPage() {
             formData.append("image", data.image[0]);
             const ImgRes = await axios.post(`https://api.imgbb.com/1/upload?key=${import.meta.env.VITE_IMG_BB_KEY}`, formData)
 
-            axios.post(`https://api.cloudinary.com/v1_1/${import.meta.env.VITE_Cloudinary_CloudName}/image/upload`, formData);
             if (!ImgRes?.data.data?.display_url) throw new Error("Image upload failed");
 
             await updateUser(data.name, ImgRes.data.data?.display_url);
@@ -44,9 +46,9 @@ export default function RegisterPage() {
             console.error(err);
             toast.error("Something went wrong!");
 
-            if (createdUser?.delete) {
+            if (createdUser?.user) {
                 try {
-                    await createdUser.delete();
+                    await createdUser.user.delete();
                     await signOutUser();
                 } catch (rollbackErr) {
                     console.error("Rollback failed:", rollbackErr);

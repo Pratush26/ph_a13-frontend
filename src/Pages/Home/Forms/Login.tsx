@@ -1,13 +1,13 @@
 import { useForm } from "react-hook-form"
 import Img from '../../../assets/auth.png'
-import '../../../Utils/form.css'
+import '../../../Utils/styles/form.css'
 import { Link, useLocation, useNavigate } from "react-router"
 import { useContext, useState } from "react"
-import { AuthContext } from "../../../Context/AuthContext"
 import { FaEye, FaEyeSlash } from "react-icons/fa"
 import { toast } from "sonner"
 import { FcGoogle } from "react-icons/fc"
 import axios from "axios"
+import { AuthContext } from "../../../Context/AuthContext"
 
 interface userInfo {
     email: string;
@@ -16,7 +16,10 @@ interface userInfo {
 
 export default function LoginPage() {
     const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<userInfo>()
-    const { user, sigInUser, googleSignIn } = useContext(AuthContext)
+    const userCtx = useContext(AuthContext);
+    if (!userCtx) throw new Error("UserContext is missing. Wrap app with UserContext Provider.");
+
+    const { user, sigInUser, googleSignIn } = userCtx;
     const [isVisible, setIsVisible] = useState(false)
     const { state } = useLocation()
     const navigate = useNavigate()
